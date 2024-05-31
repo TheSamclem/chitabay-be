@@ -53,7 +53,7 @@ User.init(
       allowNull: false,
     },
     email: {
-      type: new DataTypes.STRING(30),
+      type: new DataTypes.STRING(100),
       allowNull: false,
       unique: true,
     },

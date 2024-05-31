@@ -6,14 +6,50 @@ import {
   createUser,
   sendOtpToEmail,
   verifyOTP,
+  resendOTP,
+  resetPassword,
+  forgetPassword,
 } from "../services/userService";
+export const resetPasswordController = async (req: Request, res: Response) => {
+  const { email, newPassword } = req.body;
+
+  try {
+    await resetPassword(email, newPassword);
+    res.status(200).json({ message: "Password reset successfully" });
+  } catch (error: any) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+export const forgetPasswordController = async (req: Request, res: Response) => {
+  const { email } = req.body;
+
+  try {
+    await forgetPassword(email);
+    res
+      .status(200)
+      .json({ message: "Password reset initiated. Please check your email." });
+  } catch (error: any) {
+    res.status(400).json({ message: error.message });
+  }
+};
+export const resendOTPController = async (req: Request, res: Response) => {
+  const { email } = req.body;
+
+  try {
+    await resendOTP(email);
+    res.status(200).json({ message: "OTP resent successfully" });
+  } catch (error: any) {
+    res.status(400).json({ message: error.message });
+  }
+};
 export const verifyOtpController = async (req: Request, res: Response) => {
   const { email, otp } = req.body;
 
   try {
     const user = await verifyOTP(email, otp);
     res.status(200).json({ message: "OTP verified successfully", user });
-  } catch (error: any   ) {
+  } catch (error: any) {
     res.status(400).json({ message: error.message });
   }
 };
