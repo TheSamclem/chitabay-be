@@ -1,4 +1,6 @@
 import { Request, Response } from "express";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
 import {
   checkIfUserExists,
   hashPassword,
@@ -10,6 +12,44 @@ import {
   resetPassword,
   forgetPassword,
 } from "../services/userService";
+import User from "../models/userModel";
+export const signIn = async (req: Request, res: Response) => {
+  const { email, password } = req.body;
+
+  try {
+    // Check if the user exists
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.status(401).json({ message: "Invalid email or password" });
+    }
+
+    // Check if the password is correct
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({ message: "Invalid email or password" });
+    }
+
+    // Check if the user is verified
+    if (user.status !== "verified") {
+      return res
+        .status(403)
+        .json({ message: "Please verify your email to activate your account" });
+    }
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { userId: user.id, email: user.email },
+      process.env.JWT_SECRET as string,
+      { expiresIn: "1h" }
+    );
+
+    // Return the token
+    res.status(200).json({ token });
+  } catch (error) {
+    console.error("SignIn Error:", error);
+    res.status(500).json({ message: "An error occurred during sign-in" });
+  }
+};
 export const resetPasswordController = async (req: Request, res: Response) => {
   const { email, newPassword } = req.body;
 
